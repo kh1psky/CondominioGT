@@ -1,0 +1,131 @@
+version: '3.8'
+
+services:
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: condos-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=mysql
+      - DB_USER=condos_user
+      - DB_PASSWORD=condos_password
+      - DB_NAME=condos_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=sua_chave_secreta_jwt
+      - PORT=3000
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - condos-network
+
+  # Frontend React
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: condos-frontend
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://localhost:3000
+    depends_on:
+      - backend
+    networks:
+      - condos-network
+
+  # Banco de dados MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: condos-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker-config/mysql/init:/docker-entrypoint-initdb.d
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=condos_db
+      - MYSQL_USER=condos_user
+      - MYSQL_PASSWORD=condos_password
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - condos-network
+
+  # Cache Redis
+  redis:
+    image: redis:6-alpine
+    container_name: condos-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - condos-network
+
+  # Proxy Reverso Traefik
+  traefik:
+    image: traefik:v2.5
+    container_name: condos-traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - ./docker-config/traefik/config:/etc/traefik
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_certs:/etc/traefik/acme
+    networks:
+      - condos-network
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.directory=/etc/traefik"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--log.level=INFO"
+
+  # Gerenciamento de Containers
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: condos-portainer
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    ports:
+      - "9000:9000"
+    networks:
+      - condos-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.localhost`)"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+
+networks:
+  condos-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data:
+  traefik_certs:
+  portainer_data:
