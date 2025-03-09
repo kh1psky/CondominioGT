@@ -1,6 +1,9 @@
 const Usuario = require('./Usuario');
 const Condominio = require('./Condominio');
 const Unidade = require('./Unidade');
+const Fornecedor = require('./Fornecedor');
+const Contrato = require('./Contrato');
+const Inventario = require('./Inventario');
 
 // Estabelecer relações entre os modelos
 
@@ -47,9 +50,45 @@ Unidade.belongsTo(Usuario, {
   as: 'morador'
 });
 
+// Relações de Fornecedor
+Fornecedor.belongsTo(Condominio, {
+  foreignKey: 'condominio_id',
+  as: 'condominio'
+});
+
+Fornecedor.hasMany(Contrato, {
+  foreignKey: 'fornecedor_id',
+  as: 'contratos'
+});
+
+// Relações de Contrato
+Contrato.belongsTo(Fornecedor, {
+  foreignKey: 'fornecedor_id',
+  as: 'fornecedor'
+});
+
+Contrato.belongsTo(Condominio, {
+  foreignKey: 'condominio_id',
+  as: 'condominio'
+});
+
+// Relações de Inventario
+Inventario.belongsTo(Condominio, {
+  foreignKey: 'condominio_id',
+  as: 'condominio'
+});
+
+Inventario.belongsTo(Fornecedor, {
+  foreignKey: 'fornecedor_id',
+  as: 'fornecedor'
+});
+
 // Exportar os modelos
 module.exports = {
   Usuario,
   Condominio,
-  Unidade
+  Unidade,
+  Fornecedor,
+  Contrato,
+  Inventario
 };

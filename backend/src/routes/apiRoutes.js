@@ -5,15 +5,18 @@ const router = express.Router();
 const usuarioRoutes = require('./usuarioRoutes');
 const condominioRoutes = require('./condominioRoutes');
 const unidadeRoutes = require('./unidadeRoutes');
-const condominioUnidadeRoutes = require('./condominioUnidadeRoutes');
+// TODO: Create condominioUnidadeRoutes file or implement this functionality
 const pagamentoRoutes = require('./pagamentoRoutes');
+const inventarioRoutes = require('./inventarioRoutes');
 
 // Montar as rotas
 router.use('/usuarios', usuarioRoutes);
 router.use('/condominios', condominioRoutes);
 router.use('/unidades', unidadeRoutes);
-router.use('/condominios/:condominioId/unidades', condominioUnidadeRoutes);
+// TODO: Uncomment when condominioUnidadeRoutes is implemented
+// router.use('/condominios/:condominioId/unidades', condominioUnidadeRoutes);
 router.use('/pagamentos', pagamentoRoutes);
+router.use('/inventario', inventarioRoutes);
 
 // Rota base da API
 router.get('/', (req, res) => {

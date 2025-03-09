@@ -22,6 +22,9 @@ import DetalhesCondominio from './pages/Condominio/DetalhesCondominio';
 import NovoCondominio from './pages/Condominio/NovoCondominio';
 import EditarCondominio from './pages/Condominio/EditarCondominio';
 
+// Páginas de Inventário
+import Inventario from './pages/Inventario/Inventario';
+
 // Páginas 404
 import NotFound from './pages/NotFound';
 
@@ -66,6 +69,9 @@ function App() {
         <Route path="condominios/novo" element={<NovoCondominio />} />
         <Route path="condominios/:id" element={<DetalhesCondominio />} />
         <Route path="condominios/:id/editar" element={<EditarCondominio />} />
+        
+        {/* Rotas de Inventário */}
+        <Route path="inventario" element={<Inventario />} />
       </Route>
 
       {/* Rota 404 */}

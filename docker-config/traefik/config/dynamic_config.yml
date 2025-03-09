@@ -1,0 +1,40 @@
+# Dynamic Configuration for Traefik
+
+http:
+  routers:
+    # Frontend Router
+    frontend:
+      rule: "Host(`condominiogt.com`) || Host(`www.condominiogt.com`)"
+      service: frontend
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+    
+    # Backend API Router
+    backend:
+      rule: "Host(`condominiogt.com`) || Host(`www.condominiogt.com`) && PathPrefix(`/api`)"
+      service: backend
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+      middlewares:
+        - strip-api-prefix
+
+  middlewares:
+    strip-api-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api"
+
+  services:
+    frontend:
+      loadBalancer:
+        servers:
+          - url: "http://frontend:80"
+    
+    backend:
+      loadBalancer:
+        servers:
+          - url: "http://backend:3000"
